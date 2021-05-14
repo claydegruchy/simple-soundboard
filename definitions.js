@@ -10,6 +10,8 @@ function create_effect_group(name, count) {
   return obj;
 }
 var effect_groups = {
+  'mortar-close': 1,
+  'mortar-distant': 5,
   'arrow-loose-and-hit': 7,
   'dirt-slam': 4,
   'dragon-bite': 2,
@@ -44,6 +46,8 @@ soundboards.wave_echo_cave = [
 
 // Generic soundboards
 soundboards.combat = [
+  effect_groups['mortar-close'],
+  effect_groups['mortar-distant'],
   effect_groups['arrow-loose-and-hit'],
   effect_groups['dirt-slam'],
   effect_groups['sword-clash'],

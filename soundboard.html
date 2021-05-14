@@ -1,11 +1,13 @@
 <!DOCTYPE HTML>
 <html lang="en">
+
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Soundboard</title>
   <script src="./jquery-v3.4.1.min.js"></script>
   <script src="./definitions.js"></script>
 </head>
+
 <body>
   <div id="doc" style="display: grid; grid: auto-flow / repeat(auto-fill, 270px); grid-gap: 10px"></div>
   <script type="text/javascript" charset="utf-8">
@@ -71,6 +73,8 @@
         elem.append($('<button style="width: 20%;" class="volume0">0%</button>'));
         elem.append($('<button style="width: 20%;" class="volume50">50%</button>'));
         elem.append($('<button style="width: 20%;" class="volume100">100%</button><br>'));
+        elem.append($('<input class="loop" type="checkbox">loop</input>'));
+        elem.append($('<input class="tone" type="checkbox">tone</input>'));
       }
 
       $('#doc').append(elem);
@@ -94,7 +98,7 @@
         $(quick_play_button)
           .click(function() {
             if (audio_block.unplayed_indices === undefined ||
-                audio_block.unplayed_indices.length == 0) {
+              audio_block.unplayed_indices.length == 0) {
               audio_block.unplayed_indices = Array();
               for (let i = 0; i < all_audio.length; i += 1) {
                 audio_block.unplayed_indices.push(i);
@@ -115,7 +119,7 @@
         $(fade_in_button)
           .click(function() {
             if (audio_block.unplayed_indices === undefined ||
-                audio_block.unplayed_indices.length == 0) {
+              audio_block.unplayed_indices.length == 0) {
               audio_block.unplayed_indices = Array();
               for (let i = 0; i < all_audio.length; i += 1) {
                 audio_block.unplayed_indices.push(i);
@@ -130,8 +134,9 @@
             audio.play();
             for (let i = 0; i < all_audio.length; i += 1) {
               all_audio[i].volume = 0;
-              $(all_audio[i]).animate(
-                {'volume': 1},
+              $(all_audio[i]).animate({
+                  'volume': 1
+                },
                 4000);
             }
           });
@@ -139,8 +144,9 @@
         $(fade_out_button)
           .click(function() {
             for (let i = 0; i < all_audio.length; i += 1) {
-              $(all_audio[i]).animate(
-                {'volume': 0},
+              $(all_audio[i]).animate({
+                  'volume': 0
+                },
                 4000,
                 function() {
                   this.pause();
@@ -181,7 +187,7 @@
             // looping state to match the checkbox state
             .change(function() {
               var checkbox = $(this);
-              $(all_audio).each(function (i, x) {
+              $(all_audio).each(function(i, x) {
                 x.loop = checkbox.prop('checked');
               });
             })
@@ -189,8 +195,71 @@
             // loop
             .prop('checked', (audio.loop = (audio.duration >= 60.0)));
         }
+
+
+        let audio_tone_checkbox = audio_block.find('.tone');
+        if (audio_tone_checkbox) {
+          var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+
+          audio_tone_checkbox = audio_tone_checkbox[0];
+          $(audio_tone_checkbox)
+            // If the tone checkbox is changed then we update the audio clip's
+            // toneing state to match the checkbox state
+            .change(function() {
+              var checkbox = $(this);
+              $(all_audio).each(function(i, x) {
+
+                var source = audioCtx.createMediaElementSource(x);
+                // var biquadFilter = audioCtx.createBiquadFilter();
+                // biquadFilter.type = 'lowpass';
+                var gainNode = audioCtx.createBiquadFilter();
+
+
+
+
+                var ran = i * 1000
+                console.log(ran);
+
+                gainNode.frequency.setValueAtTime(ran, audioCtx.currentTime);
+
+                source.connect(gainNode)
+                // gainNode.gain.value = 200
+                gainNode.connect(audioCtx.destination);
+
+                function touchStarted() {
+                  getAudioContext().resume();
+                }
+
+
+                console.log(source);
+
+                // Create a MediaElementAudioSourceNode
+                // Feed the HTMLMediaElement into it
+
+
+
+
+                x.tone = checkbox.prop('checked');
+              });
+            })
+            // Automatically set audio clips that are longer than 60 seconds to
+            // tone
+            .prop('checked', (audio.tone = (audio.duration >= 60.0)));
+        }
+
       });
     });
+
+    function touchStarted() {
+      if (getAudioContext().state !== 'running') {
+        getAudioContext().resume();
+      }
+    }
+
+    function mousePressed() {
+      getAudioContext().resume()
+    }
   </script>
 </body>
+
 </html>
